@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import requests, rest_framework
 
@@ -65,3 +66,11 @@ def get_and_save_livros_from_api():
     except requests.RequestException as e:
         # Em caso de erro na requisição, exibe uma mensagem de erro ou log
         print('Erro ao obter os livros da API:', e)
+
+def emprestimos_json(request):
+    emprestimos = Emprestimo.objects.all()
+    data = [{'livro_titulo': emprestimo.livro_titulo,
+             'data_emprestimo': emprestimo.data_emprestimo,
+             'data_devolucao': emprestimo.data_devolucao,
+             'emprestado_para': emprestimo.emprestado_para} for emprestimo in emprestimos]
+    return JsonResponse(data, safe=False)
