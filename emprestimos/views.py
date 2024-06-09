@@ -28,7 +28,7 @@ def adicionar_emprestimo(request):
     context = {'form': form}
     return render(request, 'emprestimos/adicionar_emprestimo.html', context)
 
-#get_usuarios n funcional ainda
+
 def get_and_save_users_from_api():
     try:
         response = requests.get('https://cadastrocliente-production.up.railway.app/api/usuarios')
@@ -36,14 +36,24 @@ def get_and_save_users_from_api():
 
         users_json = response.json()  # Converte a resposta para JSON
 
-        # Serializa e salva os usuarios no banco de dados do Django
+        # Para cada usuário na resposta da API
         for user_data in users_json:
-            serializer = UsuarioSerializer(data=user_data)
+            cpf = user_data.get('cpf')  # Obtenha o CPF do usuário da API
+            # Verifique se o usuário já existe no banco de dados pelo CPF
+            existing_user = Usuario.objects.filter(cpf=cpf).first()
+            if existing_user:
+                # Se o usuário já existir, atualize os detalhes do usuário
+                serializer = UsuarioSerializer(existing_user, data=user_data)
+            else:
+                # Se o usuário não existir, crie um novo registro
+                serializer = UsuarioSerializer(data=user_data)
+
             if serializer.is_valid():
                 serializer.save()
     except requests.RequestException as e:
         # Em caso de erro na requisição, exibe uma mensagem de erro ou log
-        print('Erro ao obter os livros da API:', e)
+        print('Erro ao obter os usuários da API:', e)
+
         
 
 def get_and_save_livros_from_api():
@@ -53,14 +63,24 @@ def get_and_save_livros_from_api():
 
         livros_json = response.json()  # Converte a resposta para JSON
 
-        # Serializa e salva os livros no banco de dados do Django
+        # Para cada livro na resposta da API
         for livro_data in livros_json:
-            serializer = LivroSerializer(data=livro_data)
+            isbn = livro_data.get('isbn')  # Obtenha o ISBN do livro da API
+            # Verifique se o livro já existe no banco de dados pelo ISBN
+            existing_livro = Livro.objects.filter(isbn=isbn).first()
+            if existing_livro:
+                # Se o livro já existir, atualize os detalhes do livro
+                serializer = LivroSerializer(existing_livro, data=livro_data)
+            else:
+                # Se o livro não existir, crie um novo registro
+                serializer = LivroSerializer(data=livro_data)
+
             if serializer.is_valid():
                 serializer.save()
     except requests.RequestException as e:
         # Em caso de erro na requisição, exibe uma mensagem de erro ou log
         print('Erro ao obter os livros da API:', e)
+
 
 def emprestimos_json(request):
     emprestimos = Emprestimo.objects.all()
