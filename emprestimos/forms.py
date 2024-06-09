@@ -2,12 +2,12 @@ from django import forms
 from .models import Emprestimo, Livro, Usuario
 
 class EmprestimoForm(forms.ModelForm):
-    livro_titulo = forms.ModelChoiceField(queryset=Livro.objects.all(), to_field_name='titulo', empty_label=None)
-
+    livro = forms.ModelChoiceField(queryset=Livro.objects.all(), empty_label=None)
+    usuario = forms.ModelChoiceField(queryset=Usuario.objects.all(), empty_label=None)
+    
     class Meta:
         model = Emprestimo
-        fields = ['livro_titulo', 'data_emprestimo', 'data_devolucao', 'emprestado_para']
-
+        fields = ['livro', 'data_emprestimo', 'data_devolucao', 'usuario']
 
 class UsuarioForm(forms.ModelForm):
     class Meta:

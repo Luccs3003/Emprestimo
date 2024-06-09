@@ -10,19 +10,23 @@
     <table class="table">
         <thead class="thead-dark">
             <tr>
-                <th>Titulo do Livro</th>
+                <th>ID do Livro</th>
+                <th>Título do Livro</th>
                 <th>Data de Empréstimo</th>
                 <th>Data Prevista de Devolução</th>
                 <th>Emprestado Para</th>
+                <th>ID do Usuário</th>
             </tr>
         </thead>
         <tbody>
             {% for emprestimo in emprestimos %}
             <tr>
-                <td>{{ emprestimo.livro_titulo }}</td>
+                <td>{{ emprestimo.livro.id }}</td>
+                <td>{{ emprestimo.livro.titulo }}</td>
                 <td>{{ emprestimo.data_emprestimo }}</td>
                 <td>{{ emprestimo.data_devolucao }}</td>
-                <td>{{ emprestimo.emprestado_para }}</td>
+                <td>{{ emprestimo.usuario.nome }}</td>
+                <td>{{ emprestimo.usuario.id }}</td>
             </tr>
             {% endfor %}
         </tbody>
