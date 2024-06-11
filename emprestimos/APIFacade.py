@@ -1,5 +1,5 @@
 import requests
-from emprestimos.models import Livro, Usuario
+from emprestimos.models import Emprestimo, Livro, Usuario
 from emprestimos.serializers import LivroSerializer, UsuarioSerializer
 
 
@@ -56,3 +56,24 @@ class IntegracaoAPIFacade:
         except requests.RequestException as e:
             # Em caso de erro na requisição, exibe uma mensagem de erro ou log
             print('Erro ao obter os livros da API:', e)
+
+
+    @staticmethod
+    def sincronizar_devolucoes():
+        try:
+            response = requests.get('https://devolucao-production.up.railway.app/emprestimos/json')
+            response.raise_for_status()
+            devolucoes_json = response.json()
+
+            for devolucao in devolucoes_json:
+                if devolucao['mensagensEstado'] == "Devolução concluída.":
+                    livro_id = devolucao['idLivro']
+                    try:
+                        emprestimo = Emprestimo.objects.get(livro_id=livro_id, data_devolucao__isnull=False)
+                        emprestimo.delete()
+                    except Emprestimo.DoesNotExist:
+                        continue  # Se o empréstimo não existir, continue para o próximo
+        
+            print("Sincronização de devoluções concluída.")
+        except requests.RequestException as e:
+            print(f'Erro ao sincronizar devoluções: {e}')

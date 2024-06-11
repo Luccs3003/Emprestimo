@@ -8,6 +8,8 @@ from .models import Emprestimo, Livro, Usuario
 from .forms import EmprestimoForm, UsuarioForm
 
 def lista_emprestimos(request):
+    IntegracaoAPIFacade.sincronizar_devolucoes()
+
     emprestimos = Emprestimo.objects.select_related('livro', 'usuario').all()
     return render(request, 'emprestimos/lista_emprestimos.html', {'emprestimos': emprestimos})
 
