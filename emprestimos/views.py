@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 import requests, rest_framework
 
 from emprestimos.APIFacade import IntegracaoAPIFacade
+from emprestimos.decorators import ConcreteEmprestimo, LogEmprestimoDecorator
 from emprestimos.serializers import LivroSerializer, UsuarioSerializer
 from .models import Emprestimo, Livro, Usuario
 from .forms import EmprestimoForm, UsuarioForm
@@ -15,21 +16,18 @@ def lista_emprestimos(request):
 
 
 
+
 def adicionar_emprestimo(request):
     IntegracaoAPIFacade.obter_e_salvar_livros()
     IntegracaoAPIFacade.obter_e_salvar_usuarios()
 
-    emprestimos = Emprestimo.objects.all()
-    for emprestimo in emprestimos:
-        print(f"Empréstimo: {emprestimo}, Data de Devolução: {emprestimo.data_devolucao}")
-
-    livros_emprestados = Emprestimo.objects.filter(data_devolucao__isnull=True).values_list('livro_id', flat=True)
-    print(f"Livros emprestados: {list(livros_emprestados)}")  # Adicione este print para debug
-
     if request.method == "POST":
         form = EmprestimoForm(request.POST)
         if form.is_valid():
-            form.save()
+            emprestimo = form.save(commit=False)
+            componente_emprestimo = ConcreteEmprestimo()
+            emprestimo_decorator = LogEmprestimoDecorator(componente_emprestimo)
+            emprestimo_decorator.emprestar(emprestimo)
             return redirect('lista_emprestimos')
     else:
         form = EmprestimoForm()
